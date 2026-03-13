@@ -1,0 +1,13 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+test = read.csv("test.csv")
+test_dist <- dist(test[c(1,2)])
+test_mds <- cmdscale((test_dist))
+
+plot(test_mds, col = test$Type)
+
+```

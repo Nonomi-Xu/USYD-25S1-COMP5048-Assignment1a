@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+    <style>
+      #legend {
+        display: flex;
+        margin-top: 20px;
+        margin-left: 150px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-right: 10px;
+      }
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+
+<body>
+<div id="legend"></div>
+
+<!-- load the d3.js library -->    	
+<script src="//d3js.org/d3.v7.min.js"></script>
+<script>
+// set the dimensions and margins of the diagram
+var margin = {top: 20, right: 20, bottom: 20, left: 0},
+  width = 900 - margin.left - margin.right,
+  height = 300 - margin.top - margin.bottom;
+var paths;
+d3.csv("glass.csv")
+    .then(function(data){
+        
+        // append the svg object to the body of the page
+        // appends a 'group' element to 'svg'
+        // moves the 'group' element to the top left margin
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right-100)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform",
+                    "translate(" + margin.left + "," + margin.top + ")");
+        
+        
+        // Extract the list of dimensions we want to keep in the plot. Here I keep all except the column called Species
+        dimensions = Object.keys(data[0]).filter(function(d) { return d != "Type" })
+
+        // Dimensions columns exchange
+        function column_exchange(i,j) {
+            middle = dimensions[i]
+            dimensions[i] = dimensions[j]
+            dimensions[j] = middle
+        }
+
+        column_exchange(0,8)
+        column_exchange(1,5)
+        column_exchange(3,6)
+        column_exchange(6,7)
+        column_exchange(5,6)
+
+        // For each dimension, build a linear scale and store all scales in a y object
+        var y = {}
+        for (i in dimensions) {
+            name = dimensions[i]
+            y[name] = d3.scaleLinear()
+            .domain( d3.extent(data, function(d) { return +d[name]; }) )
+            .range([height, 0])
+        }
+
+        // Build the X scale -> it find the best position for each Y axis
+        x = d3.scalePoint()
+            .range([0, width-100])
+            .padding(1)
+            .domain(dimensions);
+
+        // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+        function path(d) {
+            return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
+        }
+
+        // Color_select scale: input a Type, it outputs a color
+        var Color_select = d3.scaleOrdinal()
+            .domain(["1", "2", "3", "5", "6", "7"])
+            .range([ "#69b3a2", "#fbc2eb", "#a6c0fe", "#fda085", "#d4fc79", "#2575fc"])
+
+        // Draw the lines
+        paths = svg
+        .selectAll(".myPath")
+        .data(data)
+        .enter().append("path")
+            .attr("d",  path)
+            .attr("class", "myPath")
+            .style("fill", "none")
+            .style("stroke", (function(d) {  return Color_select(d.Type) }))
+            .style("opacity", 1)
+
+        // Draw the axis:
+        var axes = svg.selectAll(".myAxis")
+        // For each dimension of the dataset I add a 'g' element:
+        .data(dimensions)
+        .enter().append("g")
+            // I translate this element to its right position on the x axis
+            .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+            .attr("class", "myAxis")
+            // And I build the axis with the call function
+            .each(function(d) { d3.select(this).call(d3.axisLeft().scale(y[d])); });
+        // Add axis title
+        axes.append("text")
+            .style("text-anchor", "middle")
+            .attr("y", -9)
+            .text(function(d) { return d; })
+            .style("fill", "black");
+});
+
+        // Legend Colour
+        var legendData = [
+        { name: "Type 1", color: "#69b3a2" },
+        { name: "Type 2", color: "#fbc2eb" },
+        { name: "Type 3", color: "#a6c0fe" },
+        { name: "Type 5", color: "#fda085" },
+        { name: "Type 6", color: "#d4fc79" },
+        { name: "Type 7", color: "#2575fc" }
+        ];
+        
+        // Legend Container
+        var legendContainer = d3.select("#legend");
+        
+        // Legend
+        var legendItems = legendContainer.selectAll(".legend-item")
+        .data(legendData)
+        .enter()
+        .append("div")
+        .attr("class", "legend-item");
+        
+        legendItems.append("div")
+        .style("background-color", function(d) { return d.color; })
+        .attr("class", "legend-color");
+        
+        legendItems.append("div")
+        .text(function(d) { return d.name; })
+        .attr("class", "legend-text");
+
+</script>
+</body>

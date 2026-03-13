@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #legend {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <svg width="300" height="300" id="pie"></svg>
+  <div id="legend"></div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script>
+    // 饼图数据
+    var data = [30, 50, 20];
+    
+    // 饼图颜色
+    var color = d3.scaleOrdinal()
+      .range(["red", "blue", "green"]);
+    
+    // 创建饼图
+    var pie = d3.pie()(data);
+    
+    // 创建饼图容器
+    var svg = d3.select("#pie");
+    
+    // 绘制饼图
+    var arcs = svg.selectAll("arc")
+      .data(pie)
+      .enter()
+      .append("path")
+      .attr("transform", "translate(150, 150)")
+      .attr("d", d3.arc()
+        .innerRadius(0)
+        .outerRadius(100)
+      )
+      .attr("fill", function(d) { return color(d.index); });
+    
+    // 图例数据
+    var legendData = [
+      { name: "Type 1", color: "red" },
+      { name: "Type 2", color: "blue" },
+      { name: "Type 3", color: "green" }
+    ];
+    
+    // 图例容器
+    var legendContainer = d3.select("#legend");
+    
+    // 渲染图例
+    var legendItems = legendContainer.selectAll(".legend-item")
+      .data(legendData)
+      .enter()
+      .append("div")
+      .attr("class", "legend-item");
+    
+    legendItems.append("div")
+      .style("background-color", function(d) { return d.color; })
+      .attr("class", "legend-color");
+    
+    legendItems.append("div")
+      .text(function(d) { return d.name; })
+      .attr("class", "legend-text");
+  </script>
+</body>
+</html>

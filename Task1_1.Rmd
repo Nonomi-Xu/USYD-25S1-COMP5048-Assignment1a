@@ -1,0 +1,56 @@
+---
+title: "Assignment1A Task1_2 Notebook"
+output: html_notebook
+---
+
+Import the library and data.
+```{r}
+# Libraries
+library(plotly)
+
+
+df <- glass
+
+range_min = vector("double", ncol(df))
+range_max = vector("double", ncol(df))
+labels = vector("character", ncol(df))
+
+for (i in seq_along(df)) {
+  range_min[[i]] = min(df[[i]])
+  range_max[[i]] = max(df[[i]])
+  labels[[i]] = colnames(df)[i]
+  
+}
+```
+
+
+```{r}
+
+fig <- df %>% plot_ly(type = 'parcoords', labelangle=30,
+                      
+
+          line = list(color = ~Type,
+
+                      colorscale = 'Viridis'),
+
+          dimensions = list(
+
+            list(range = c(range_min[1],range_max[1]),label = labels[1], values = ~RI),
+            list(range = c(range_min[2],range_max[2]),label = labels[2], values = ~Na),
+            list(range = c(range_min[3],range_max[3]),label = labels[3], values = ~Mg),
+            list(range = c(range_min[4],range_max[4]),label = labels[4], values = ~Al),
+            list(range = c(range_min[5],range_max[5]),label = labels[5], values = ~Si),
+            list(range = c(range_min[6],range_max[6]),label = labels[6], values = ~K),
+            list(range = c(range_min[7],range_max[7]),label = labels[7], values = ~Ca),
+            list(range = c(range_min[8],range_max[8]),label = labels[8], values = ~Ba),
+            list(range = c(range_min[9],range_max[9]),label = labels[9], values = ~Fe)
+
+            )
+
+          )
+
+
+fig
+
+```
+

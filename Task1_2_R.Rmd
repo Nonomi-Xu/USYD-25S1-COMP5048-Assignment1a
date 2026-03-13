@@ -1,0 +1,44 @@
+---
+title: "COMP5048 Assignment 1A MDS Notebook"
+output: html_notebook
+---
+
+```{r}
+Type_color <- function(type){
+  if (type == 1){
+    return ("black")
+  }
+  if (type == 2){
+    return ("red")
+  }
+  if (type == 3){
+    return ("green")
+  }
+  if (type == 4){
+    return ("blue")
+  }
+  if (type == 5){
+    return ("lightblue")
+  }
+  if (type == 6){
+    return ("purple")
+  }
+  if (type == 7){
+    return ("yellow")
+  }
+}
+```
+
+```{r}
+glass = read.csv("glass.csv")
+glass_dist <- dist(glass[c(1:9)])
+glass_mds <- cmdscale((glass_dist))
+
+plot(glass_mds, col = glass$Type)
+
+legend('topright',
+       c("Type 1","Type 2","Type 3","Type 5","Type 6","Type 7"), pch=c(1,1,1,1,1,1), col = c("black", "red", "green", "cyan", "purple", "yellow"))
+```
+
+
+

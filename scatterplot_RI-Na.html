@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<head>
+  <style>
+    #legend {
+      display: flex;
+      margin-top: 20px;
+      margin-left: 150px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+    }
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+
+<!-- Create a div where the graph will take place -->
+<div id="legend"></div>
+<div id="glass"></div>
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 30, bottom: 40, left: 50},
+    width = 800 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
+
+// append the SVG object to the body of the page
+var svg = d3.select("#glass")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")")
+
+// Add the black box around the chart
+svg
+  .append("rect")
+    .attr("x",0)
+    .attr("y",0)
+    .attr("height", height)
+    .attr("width", height)
+    .style("fill", "none")
+    .style("stroke", "black")
+
+//Read the data
+d3.csv("glass.csv").then(function(data) {
+
+  // Add X axis
+  var x = d3.scaleLinear()
+    .domain(d3.extent(data, function(d) { return +d["Na"]; }))
+    .range([ 0, width ])
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x))
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain(d3.extent(data, function(d) { return +d["RI"]; }))
+    .range([ height, 0])
+    .nice()
+  svg.append("g")
+    .call(d3.axisLeft(y))
+
+  // Add X axis label:
+  svg.append("text")
+      .attr("text-anchor", "end")
+      .attr("x", width)
+      .attr("y", height + margin.top+10)
+      .text("Na");
+
+  // Y axis label:
+  svg.append("text")
+      .attr("text-anchor", "end")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -margin.left+20)
+      .attr("x", -margin.top)
+      .text("RI")
+
+  // Color select: input a Type, it outputs a color
+  var Color_select = d3.scaleOrdinal()
+      .domain(["1", "2", "3", "5", "6", "7"])
+      .range([ "#69b3a2", "#fbc2eb", "#a6c0fe", "#fda085", "#d4fc79", "#2575fc"])
+
+  // Add dots
+  svg.append('g')
+    .selectAll("dot")
+    .data(data)
+    .enter()
+    .append("path")
+      .attr("d", d3.symbol()
+        .size(120)
+        .type(d3.symbolSquare)
+      )
+      .attr("transform", function(d) { return "translate(" + x(+d["Na"]) + "," + y(+d["RI"]) + ")"; })
+      .style("fill", (function(d) {  return Color_select(d.Type) }))
+      .style("opacity", 0.8)
+
+
+        // For each Type, input a color to scale it.
+        var legendData = [
+        { name: "Type 1", color: "#69b3a2" },
+        { name: "Type 2", color: "#fbc2eb" },
+        { name: "Type 3", color: "#a6c0fe" },
+        { name: "Type 5", color: "#fda085" },
+        { name: "Type 6", color: "#d4fc79" },
+        { name: "Type 7", color: "#2575fc" }
+        ];
+        
+        // Container
+        var legendContainer = d3.select("#legend");
+        
+        // Give out the legend.
+        var legendItems = legendContainer.selectAll(".legend-item")
+        .data(legendData)
+        .enter()
+        .append("div")
+        .attr("class", "legend-item");
+        
+        legendItems.append("div")
+        .style("background-color", function(d) { return d.color; })
+        .attr("class", "legend-color");
+        
+        legendItems.append("div")
+        .text(function(d) { return d.name; })
+        .attr("class", "legend-text");
+
+})
+
+</script>
